@@ -1,0 +1,8 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+        >
+<PreferenceScreen
+            android:fragment="com.mokee.permissionsassistant.fragments.AppOpsSummary"
+            android:summary="nicai"
+            android:title="xxx">
+        </PreferenceScreen>
+        </PreferenceScreen>
