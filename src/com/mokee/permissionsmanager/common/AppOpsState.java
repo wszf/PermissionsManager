@@ -43,7 +43,7 @@ import com.mokee.permissionsmanager.R;
 public class AppOpsState
 	{
 		static final String TAG = "AppOpsState";
-		static final boolean DEBUG = false;
+		public static final boolean DEBUG = false;
 
 		final Context mContext;
 		final AppOpsManager mAppOps;
@@ -108,18 +108,9 @@ public class AppOpsState
 					};
 			}
 
-		public static final OpsTemplate LOCATION_TEMPLATE = new OpsTemplate(new int[] {
-				AppOpsManager.OP_COARSE_LOCATION,
-				AppOpsManager.OP_FINE_LOCATION, 
-				AppOpsManager.OP_GPS, 
-				AppOpsManager.OP_WIFI_SCAN,
-				AppOpsManager.OP_NEIGHBORING_CELLS
-				}, new boolean[] { 
-						true,
-						true,
-						false, 
-						false, 
-						false });
+		public static final OpsTemplate LOCATION_TEMPLATE = new OpsTemplate(new int[] { AppOpsManager.OP_COARSE_LOCATION,
+				AppOpsManager.OP_FINE_LOCATION, AppOpsManager.OP_GPS, AppOpsManager.OP_WIFI_SCAN,
+				AppOpsManager.OP_NEIGHBORING_CELLS }, new boolean[] { true, true, false, false, false });
 
 		public static final OpsTemplate PERSONAL_TEMPLATE = new OpsTemplate(new int[] { AppOpsManager.OP_READ_CONTACTS,
 				AppOpsManager.OP_WRITE_CONTACTS, AppOpsManager.OP_READ_CALL_LOG, AppOpsManager.OP_WRITE_CALL_LOG,
@@ -419,6 +410,7 @@ public class AppOpsState
 		private void addOp(List<AppOpEntry> entries, AppOpsManager.PackageOps pkgOps, AppEntry appEntry,
 				AppOpsManager.OpEntry opEntry, boolean allowMerge, int switchOrder)
 			{
+				
 				if (allowMerge && entries.size() > 0)
 					{
 						AppOpEntry last = entries.get(entries.size() - 1);

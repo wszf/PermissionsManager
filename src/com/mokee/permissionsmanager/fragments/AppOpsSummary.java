@@ -29,87 +29,102 @@ import android.view.ViewGroup;
 import com.mokee.permissionsmanager.R;
 import com.mokee.permissionsmanager.common.AppOpsState;
 
-public class AppOpsSummary extends Fragment {
-    // layout inflater object used to inflate views
-    private LayoutInflater mInflater;
-    
-    private ViewGroup mContentContainer;
-    private View mRootView;
-    private ViewPager mViewPager;
+public class AppOpsSummary extends Fragment
+	{
+		// layout inflater object used to inflate views
+		private LayoutInflater mInflater;
 
-    CharSequence[] mPageNames;
-    static AppOpsState.OpsTemplate[] sPageTemplates = new AppOpsState.OpsTemplate[] {
-        AppOpsState.LOCATION_TEMPLATE,
-        AppOpsState.PERSONAL_TEMPLATE,
-        AppOpsState.MESSAGING_TEMPLATE,
-        AppOpsState.DEVICE_TEMPLATE
-    };
+		private ViewGroup mContentContainer;
+		private View mRootView;
+		private ViewPager mViewPager;
+		CharSequence[] mPageNames;
+		public static AppOpsState.OpsTemplate[] sFilterTemplates = new AppOpsState.OpsTemplate[] {
+				AppOpsState.LOCATION_TEMPLATE,
+				AppOpsState.PERSONAL_TEMPLATE, 
+				AppOpsState.MESSAGING_TEMPLATE, 
+				AppOpsState.DEVICE_TEMPLATE };
+		int mCurPos;
 
-    int mCurPos;
+		class MyPagerAdapter extends FragmentPagerAdapter implements ViewPager.OnPageChangeListener
+			{
 
-    class MyPagerAdapter extends FragmentPagerAdapter implements ViewPager.OnPageChangeListener {
+				public MyPagerAdapter(FragmentManager fm)
+					{
+						super(fm);
+					}
 
-        public MyPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
+				@Override
+				public Fragment getItem(int position)
+					{
+						//return new AppOpsCategory(sFilterTemplates[position]);
+						if(position==0)
+							{
+								return new AppOpsCategory(sFilterTemplates[0],0);
+							}
+						else{
+							
+						}
+						return new AppOpsCategory(sFilterTemplates[0],1);
+					}
 
-        @Override
-        public Fragment getItem(int position) {
-            return new AppOpsCategory(sPageTemplates[position]);
-        }
+				@Override
+				public int getCount()
+					{
+						return mPageNames.length;
+					}
 
-        @Override
-        public int getCount() {
-            return sPageTemplates.length;
-        }
+				@Override
+				public CharSequence getPageTitle(int position)
+					{
+						return mPageNames[position];
+					}
 
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return mPageNames[position];
-        }
+				@Override
+				public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
+					{
+					}
 
-        @Override
-        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-        }
+				@Override
+				public void onPageSelected(int position)
+					{
+						mCurPos = position;
+					}
 
-        @Override
-        public void onPageSelected(int position) {
-            mCurPos = position;
-        }
+				@Override
+				public void onPageScrollStateChanged(int state)
+					{
+						if (state == ViewPager.SCROLL_STATE_IDLE)
+							{
+								// updateCurrentTab(mCurPos);
+							}
+					}
+			}
 
-        @Override
-        public void onPageScrollStateChanged(int state) {
-            if (state == ViewPager.SCROLL_STATE_IDLE) {
-                //updateCurrentTab(mCurPos);
-            }
-        }
-    }
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+			{
+				// initialize the inflater
+				mInflater = inflater;
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // initialize the inflater
-        mInflater = inflater;
+				View rootView = mInflater.inflate(R.layout.app_ops_summary, container, false);
+				mContentContainer = container;
+				mRootView = rootView;
 
-        View rootView = mInflater.inflate(R.layout.app_ops_summary,
-                container, false);
-        mContentContainer = container;
-        mRootView = rootView;
+//				mPageNames = getResources().getTextArray(R.array.app_ops_categories);
+				mPageNames = getResources().getTextArray(R.array.page_name);
+				mViewPager = (ViewPager) rootView.findViewById(R.id.pager);
+				MyPagerAdapter adapter = new MyPagerAdapter(getChildFragmentManager());
+				mViewPager.setAdapter(adapter);
+				mViewPager.setOnPageChangeListener(adapter);
+				PagerTabStrip tabs = (PagerTabStrip) rootView.findViewById(R.id.tabs);
+				tabs.setTabIndicatorColorResource(android.R.color.holo_blue_light);
 
-        mPageNames = getResources().getTextArray(R.array.app_ops_categories);
+				// We have to do this now because PreferenceFrameLayout looks at it
+				// only when the view is added.
+				// if (container instanceof PreferenceFrameLayout) {
+				// ((PreferenceFrameLayout.LayoutParams) rootView.getLayoutParams()).removeBorders = true;
+				// }
 
-        mViewPager = (ViewPager) rootView.findViewById(R.id.pager);
-        MyPagerAdapter adapter = new MyPagerAdapter(getChildFragmentManager());
-        mViewPager.setAdapter(adapter);
-        mViewPager.setOnPageChangeListener(adapter);
-        PagerTabStrip tabs = (PagerTabStrip) rootView.findViewById(R.id.tabs);
-        tabs.setTabIndicatorColorResource(android.R.color.holo_blue_light);
-
-        // We have to do this now because PreferenceFrameLayout looks at it
-        // only when the view is added.
-//        if (container instanceof PreferenceFrameLayout) {
-//            ((PreferenceFrameLayout.LayoutParams) rootView.getLayoutParams()).removeBorders = true;
-//        }
-
-        return rootView;
-    }
-}
+				return rootView;
+			}
+	}

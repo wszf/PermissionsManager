@@ -11,4 +11,5 @@
     <string name="app_ops_settings">App ops</string>
     <!-- Manage applications, version string displayed in app snippet -->
    <string name="version_text">version %1$s</string>
+   <string name="title">PermissionsManager---Filter:</string>
 </resources>

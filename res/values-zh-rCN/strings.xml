@@ -16,9 +16,14 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">权限管理</string>
+  <string name="app_name">权限管理</string>
   <string name="app_ops_running" msgid="7706949900637284122">"正在运行"</string>
   <string name="app_ops_never_used" msgid="9114608022906887802">"（从未使用）"</string>
   <string name="app_ops_settings" msgid="5108481883575527511">"应用操作"</string>
   <string name="version_text" msgid="9189073826278676425">"版本 <xliff:g id="VERSION_NUM">%1$s</xliff:g>"</string>
+  <string name="location">位置</string>
+  <string name="personal">个人</string>
+  <string name="sms">短信</string>
+  <string name="device">设备</string>
+  <string name="title">权限管理---筛选:</string>
 </resources>

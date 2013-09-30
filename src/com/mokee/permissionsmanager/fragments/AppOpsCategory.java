@@ -16,6 +16,7 @@
 
 package com.mokee.permissionsmanager.fragments;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.app.ListFragment;
@@ -27,9 +28,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +42,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.mokee.permissionsmanager.R;
+import com.mokee.permissionsmanager.activites.MainActivity;
 import com.mokee.permissionsmanager.common.AppOpsState;
 import com.mokee.permissionsmanager.common.AppOpsState.AppOpEntry;
 
@@ -46,23 +50,25 @@ public class AppOpsCategory extends ListFragment implements LoaderManager.Loader
 	{
 
 		private static final int RESULT_APP_DETAILS = 1;
-
-		AppOpsState mState;
-
+		private  int flag=0;//0app1system
+		private AppOpsState mState;
+		private LocalBroadcastManager localBroadcastManager;
 		// This is the Adapter being used to display the list's data.
-		AppListAdapter mAdapter;
-
-		String mCurrentPkgName;
+		private AppListAdapter mAdapter;
+		private static AppOpsState.OpsTemplate template;
+		private String mCurrentPkgName;
 
 		public AppOpsCategory()
 			{
 			}
 
-		public AppOpsCategory(AppOpsState.OpsTemplate template)
+		public AppOpsCategory(AppOpsState.OpsTemplate template,int flag)
 			{
+				this.template=template;
 				Bundle args = new Bundle();
 				args.putParcelable("template", template);
 				setArguments(args);
+				this.flag=flag;
 			}
 
 		/**
@@ -139,7 +145,7 @@ public class AppOpsCategory extends ListFragment implements LoaderManager.Loader
 				@Override
 				public List<AppOpEntry> loadInBackground()
 					{
-						return mState.buildState(mTemplate);
+						return mState.buildState(template);//loading applist
 					}
 
 				/**
@@ -278,7 +284,7 @@ public class AppOpsCategory extends ListFragment implements LoaderManager.Loader
 				private final LayoutInflater mInflater;
 				private final AppOpsState mState;
 
-				List<AppOpEntry> mList;
+				List<AppOpEntry> mList=new ArrayList<AppOpsState.AppOpEntry>();
 
 				public AppListAdapter(Context context, AppOpsState state)
 					{
@@ -287,9 +293,25 @@ public class AppOpsCategory extends ListFragment implements LoaderManager.Loader
 						mState = state;
 					}
 
-				public void setData(List<AppOpEntry> data)
+				public void setData(List<AppOpEntry> data,int flag)
 					{
-						mList = data;
+						mList.clear();
+						if(data!=null)
+							{
+								for(int i=0;i<data.size();i++)
+									{
+										if ((data.get(i).getAppEntry().getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) == flag)
+											{
+													mList.add(data.get(i));
+											}
+									}
+								removeDuplicate(mList);//filter app
+							}
+						else{
+							mList=null;
+						}
+						
+						//mList = data;
 						notifyDataSetChanged();
 					}
 
@@ -332,7 +354,6 @@ public class AppOpsCategory extends ListFragment implements LoaderManager.Loader
 						((TextView) view.findViewById(R.id.app_name)).setText(item.getAppEntry().getLabel());
 						((TextView) view.findViewById(R.id.op_name)).setText(item.getSummaryText(mState));
 						((TextView) view.findViewById(R.id.op_time)).setText(item.getTimeText(mResources, false));
-
 						return view;
 					}
 			}
@@ -342,6 +363,10 @@ public class AppOpsCategory extends ListFragment implements LoaderManager.Loader
 			{
 				super.onCreate(savedInstanceState);
 				mState = new AppOpsState(getActivity());
+				localBroadcastManager=LocalBroadcastManager.getInstance(getActivity());
+				IntentFilter intentFilter=new IntentFilter();
+				intentFilter.addAction(MainActivity.BR_UPDATE);
+				localBroadcastManager.registerReceiver(broadcastReceiver, intentFilter);
 			}
 
 		@Override
@@ -364,7 +389,7 @@ public class AppOpsCategory extends ListFragment implements LoaderManager.Loader
 				setListShown(false);
 
 				// Prepare the loader.
-				getLoaderManager().initLoader(0, null, this);
+				//getLoaderManager().initLoader(0, null, this);
 			}
 
 		// utility method used to start sub activity
@@ -396,12 +421,12 @@ public class AppOpsCategory extends ListFragment implements LoaderManager.Loader
 		@Override
 		public Loader<List<AppOpEntry>> onCreateLoader(int id, Bundle args)
 			{
-				Bundle fargs = getArguments();
-				AppOpsState.OpsTemplate template = null;
-				if (fargs != null)
-					{
-						template = (AppOpsState.OpsTemplate) fargs.getParcelable("template");
-					}
+//				Bundle fargs = getArguments();
+//				AppOpsState.OpsTemplate template = null;
+//				if (fargs != null)
+//					{
+//						template = (AppOpsState.OpsTemplate) fargs.getParcelable("template");
+//					}
 				return new AppListLoader(getActivity(), mState, template);
 			}
 
@@ -409,7 +434,7 @@ public class AppOpsCategory extends ListFragment implements LoaderManager.Loader
 		public void onLoadFinished(Loader<List<AppOpEntry>> loader, List<AppOpEntry> data)
 			{
 				// Set the new data in the adapter.
-				mAdapter.setData(data);
+				mAdapter.setData(data,flag);
 
 				// The list should now be shown.
 				if (isResumed())
@@ -425,6 +450,40 @@ public class AppOpsCategory extends ListFragment implements LoaderManager.Loader
 		public void onLoaderReset(Loader<List<AppOpEntry>> loader)
 			{
 				// Clear the data in the adapter.
-				mAdapter.setData(null);
+				mAdapter.setData(null,flag);
+			}
+		private BroadcastReceiver broadcastReceiver=new BroadcastReceiver()
+			{
+				@Override
+				public void onReceive(Context context, Intent intent)
+					{
+						if("update".equals(intent.getAction()))
+							{
+								template=intent.getParcelableExtra(MainActivity.BR_UPDATE);
+								getLoaderManager().restartLoader(0, null, AppOpsCategory.this);
+							}
+						
+					}
+			};
+
+		@Override
+		public void onDestroy()
+			{
+				localBroadcastManager.unregisterReceiver(broadcastReceiver);
+				getLoaderManager().destroyLoader(0);
+				super.onDestroy();
+			}
+		/**
+		 * app filter
+		 * @param list
+		 */
+		public static void removeDuplicate(List<AppOpEntry> list) {
+			   for ( int i = 0 ; i < list.size() - 1 ; i ++ ) {
+			     for ( int j = list.size() - 1 ; j > i; j -- ) {
+			       if (list.get(j).getAppEntry().equals(list.get(i).getAppEntry())) {
+			         list.remove(j);
+			       }
+			      }
+			    }
 			}
 	}

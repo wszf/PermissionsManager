@@ -75,4 +75,8 @@
         <item>Messaging</item>
         <item>Device</item>
     </string-array>
+     <string-array name="page_name">
+      <item >User App</item>
+      <item >System App</item>
+  </string-array>
 </resources>
